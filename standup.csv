@@ -1,0 +1,7 @@
+Name,Yesterday,Today,Blocker,Status
+Ravi,UI design done,API integration,None,In Progress
+Priya,DB schema,Testing queries,Need server access approval,Blocked
+Karthik,Bug fixes,Code review,Waiting for Ravi merge,Waiting
+Sneha,Documentation,Deployment setup,N/A,Done
+Divya,Setup environment,Setup environment,Need credentials,Blocked
+Arun,Code review,Code review,-,In Progress
