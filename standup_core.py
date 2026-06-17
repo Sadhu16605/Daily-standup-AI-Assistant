@@ -1,19 +1,3 @@
-"""
-standup_core.py
------------------
-Core logic for the Daily Standup Assistant — reusable by both the
-CLI script (standup_assistant_v2.py) and the Streamlit dashboard
-(streamlit_app.py).
-
-Includes:
-- CSV loading & cleaning
-- Blocker detection (handles None/NA/N-A/-/Nil variations)
-- Follow-up action generation
-- Recommendation generation
-- Rule-based AI summary (fallback)
-- LLM-based AI summary (OpenAI) — optional, used if API key is set
-"""
-
 import pandas as pd
 import re
 import os
@@ -22,12 +6,7 @@ NO_BLOCKER_VALUES = {
     'none', 'na', 'n/a', '-', '--', 'nil', 'nothing',
     'no blocker', 'no blockers', 'no issues', 'not applicable', ''
 }
-
-
-# ---------------------------------------------------------------------
 # Data loading
-# ---------------------------------------------------------------------
-
 def load_standup_data(csv_path_or_buffer):
     """Load CSV (path or file-like object) and clean it."""
     df = pd.read_csv(csv_path_or_buffer)
@@ -36,12 +15,7 @@ def load_standup_data(csv_path_or_buffer):
     df['Today'] = df['Today'].fillna('').astype(str).str.strip()
     df['Yesterday'] = df['Yesterday'].fillna('').astype(str).str.strip()
     return df
-
-
-# ---------------------------------------------------------------------
 # Blocker detection
-# ---------------------------------------------------------------------
-
 def has_real_blocker(blocker_text):
     cleaned = blocker_text.strip().lower()
     cleaned = re.sub(r'[^a-z0-9\s]', '', cleaned)
@@ -58,10 +32,7 @@ def get_pending_work(df):
     pending = df[df['Status'].str.lower() != 'done']
     return pending[['Name', 'Today', 'Status']]
 
-
-# ---------------------------------------------------------------------
 # Follow-up actions
-# ---------------------------------------------------------------------
 
 def extract_dependency_person(blocker_text):
     match = re.search(r'(?:waiting for|from|by)\s+([A-Z][a-zA-Z]+)', blocker_text)
@@ -91,10 +62,7 @@ def get_followups(df):
     ]
     return pd.DataFrame({'Name': blockers_df['Name'].values, 'Follow-up Action': actions})
 
-
-# ---------------------------------------------------------------------
 # Recommendations
-# ---------------------------------------------------------------------
 
 def generate_recommendations(df):
     recommendations = []
@@ -125,10 +93,7 @@ def generate_recommendations(df):
 
     return recommendations
 
-
-# ---------------------------------------------------------------------
-# Rule-based summary (fallback, no API key needed)
-# ---------------------------------------------------------------------
+# Rule-based summary
 
 def generate_rule_based_summary(df):
     total = len(df)
@@ -157,18 +122,11 @@ def generate_rule_based_summary(df):
     return " ".join(lines)
 
 
-# ---------------------------------------------------------------------
-# LLM-based summary (OpenAI) — used when an API key is available
-# ---------------------------------------------------------------------
+# LLM-based summary
+
 
 def generate_llm_summary(df, api_key=None):
-    """
-    Uses the OpenAI API to turn the standup data into a polished,
-    human-like executive summary. Falls back to the rule-based
-    summary if no API key is available.
-
-    Set OPENAI_API_KEY environment variable, or pass api_key directly.
-    """
+    
     api_key = api_key or os.environ.get("OPENAI_API_KEY")
 
     if not api_key:
@@ -202,10 +160,7 @@ def generate_llm_summary(df, api_key=None):
     except Exception as e:
         return generate_rule_based_summary(df) + f"\n\n(⚠️ LLM call failed: {e}. Showing rule-based summary instead.)"
 
-
-# ---------------------------------------------------------------------
-# Combined report dict (handy for HTML/Streamlit/Email use)
-# ---------------------------------------------------------------------
+# Combined report dict 
 
 def build_report(df, use_llm=False, api_key=None):
     blockers = get_blockers(df)
